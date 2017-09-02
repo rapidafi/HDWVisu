@@ -1,13 +1,14 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="en">
 <head>
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Mosquitto test client</title>
-    <meta name="description" content="An interactive getting started guide for Brackets.">
     <script type="text/javascript" src="mqttws31.js"></script>
     <script type="text/javascript" src="config.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+	<script src="realTimeChart.js"></script>
     <script type="text/javascript">
         // Parameters
         var hostname = clientData.ws.hostname;
@@ -46,7 +47,30 @@
         function onMessageArrived(message) {
             console.log("Message arrived: topic=" + message.destinationName + ", message=" + message.payloadString);
             var d1 = document.getElementById('messages');
+            var objson = JSON.parse(message.payloadString);    
             d1.insertAdjacentHTML('beforeend', '<div>'+message.payloadString+'</div>');
+
+			var timeout = Math.round(timeScale(normal()));
+
+			setTimeout(function() {
+
+  			// create new data item
+			var now = new Date();
+    
+   			var obj = {
+      			value: valueScale(objson.data),
+      			time: now,
+      			color: "red",
+      			ts: now.getTime(),
+      			interval: timeout
+    		};
+
+    		// send the datum to the chart
+    		chart.datum(obj);
+
+    		// do forever
+			}, timeout);
+
         }
         
         function send() {
@@ -58,10 +82,166 @@
             client.send(message);
         }
     </script>
-</head>
 
+  <meta charset="utf-8">
+
+  <title>Ilmanlaatuvisualisointi</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css" crossorigin="anonymous">
+
+  <style>
+
+  .axis text {
+    font: 10px sans-serif;
+    color: #fff !important;
+  }
+  .chartTitle {
+    text-anchor: middle; 
+    color: #fff !important;
+  }
+  .axis .title {
+    text-anchor: middle;
+    color: white;
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+  }
+  .x.axis path {
+    fill: none;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+  }
+  .nav .area {
+    fill: lightgrey;
+    stroke-width: 0px;
+  }
+  .nav .line {
+    fill: none;
+    stroke: darkgrey;
+    stroke-width: 1px;
+  }
+  .viewport {
+    stroke: black;
+    fill: black;
+    fill-opacity: 0.3;
+  }
+  .viewport .extent {
+    fill: green;
+  }
+  .well {
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+
+  </style>
+  
 <body>
-    <div id="messages"></div>
+
+    <div class="container" id="main">
+
+      <div class="page-header" id="banner">
+        <div class="row">
+          <div class="col-lg-3">
+				<img src="logo.png" width="100%">
+				<div class="laatikko">
+					<p>Helsingissä kerätään joka päivä valtavia määriä dataa, jota voidaan hyödyntää päätöksenteon tukena sekä erilaisten digitaalisten palveluiden tuottamisessa.</p>
+					<p>Oheisissa kuvaajissa havainnollistetaan Helsingin ilmanlaadusta erilaisilla sensoreilla kerättävää dataa.</p>
+					<p>Kokeile puhaltaa pölyä näytön oikealla puolella olevaan sensoriin. Mitä tapahtuu?</p>
+				</div>			
+          </div>
+          <div class="col-lg-9">
+          
+			<div class="laatikko">
+                <h2>Ilmanlaatu Helsingissä</h2>
+                <p>TODO: Biomi data</p>                
+			</div>
+
+			<div class="laatikko">
+                <h2>Ilmanlaatu näyttelytilassa</h2>                
+ 				<div id="viewDiv"></div>
+				<div id="messages" style="height:70px;overflow-y: scroll;">
+			</div>
+				
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../assets/js/custom.js"></script>
+
+
+<script>
+'use strict';
+
+// mean and deviation for time interval
+var meanMs = 1000, // milliseconds
+    dev = 150;
+
+// define time scale
+var timeScale = d3.scale.linear()
+    .domain([300, 1700])
+    .range([300, 1700])
+    .clamp(true);
+
+// define value scale
+var valueScale = d3.scale.linear()
+    .domain([0, 20])
+    .range([30, 95]);
+
+// generate initial data
+var normal = d3.random.normal(1000, 150);
+var currMs = new Date().getTime() - 300000 - 4000;
+var data = d3.range(300).map(function(d, i, arr) {
+  var value = valueScale(Math.random()); // random data
+  //var value = Math.round((d % 60) / 60 * 95); // ramp data
+  var interval = Math.round(timeScale(normal()));
+  currMs += interval;
+  var time = new Date(currMs);
+  var obj = { interval: interval, value: value, time: time, ts: currMs }
+  return obj;
+})
+
+// create the real time chart
+var chart = realTimeChart()
+    .title("Ilmanlaatu näyttelytilassa")
+    .yTitle("Pienhiukkaset (PM2.5)")
+    .xTitle("Aika")
+    .border(false)
+    .width(800)
+    .height(400)
+    .barWidth(2)
+    .initialData(data);
+
+console.log("Version: ", chart.version);
+console.dir("Dir++");
+console.trace();
+console.warn("warn")
+
+// invoke the chart
+var chartDiv = d3.select("#viewDiv").append("div")
+    .attr("id", "chartDiv")
+    .call(chart);
+
+// alternative invocation
+//chart(chartDiv); 
+
+
+// drive data into the chart roughly every second
+// in a normal use case, real time data would arrive through the network or some other mechanism
+var d = 0;
+
+// start the data generator
+//dataGenerator();
+
+</script>
+
 </body>
 
 </html>
