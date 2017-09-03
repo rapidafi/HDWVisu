@@ -9,6 +9,7 @@
     <script type="text/javascript" src="config.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
 	<script src="realTimeChart.js"></script>
+	<script src="carousel.js"></script>
     <script type="text/javascript">
         // Parameters
         var hostname = clientData.ws.hostname;
@@ -60,7 +61,7 @@
    			var obj = {
       			value: valueScale(objson.data),
       			time: now,
-      			color: "red",
+      			color: "#f5a3c7",
       			ts: now.getTime(),
       			interval: timeout
     		};
@@ -86,7 +87,9 @@
   <meta charset="utf-8">
 
   <title>Ilmanlaatuvisualisointi</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
   <style>
 
@@ -128,54 +131,210 @@
     fill-opacity: 0.3;
   }
   .viewport .extent {
-    fill: green;
+    fill: #00d7a7;
   }
   .well {
     padding-top: 0px;
     padding-bottom: 0px;
   }
 
+.navbar {
+	background:#0072C6;
+	height:60px;
+	border: 0px;
+	}
+
+ul.nav {
+	height: 60px;
+	padding: 7px 15px;
+}
+
+ul.nav > li > a {
+	color:#fff !important;
+	font-size: 18px;
+	font-weight: bold;
+}
+
+.navbar-brand {
+  padding: 0px;
+  height: 60px;
+}
+.navbar-brand>img {
+  height: 100%;
+  padding: 7px 15px;
+  width: auto;
+}
+
+html, body {
+	background-color: #222;
+	box-shadow: inset 0 0 490px black;
+	color: white;
+	height: 100%;
+}
+
+h3 {
+	
+}
+
+/* Carousel CSS */
+
+.carousel{
+    background: #2f4357;
+    margin-top: 20px;
+}
+.carousel .item{
+    min-height: 280px; /* Prevent carousel from being distorted if for some reason image doesn't load */
+}
+.carousel .item img{
+    margin: 0 auto; /* Align slide image horizontally center */
+}
+
+.carousel-caption {
+	background: rgba(0,0,0,0.7);
+	margin-bottom: 50px;
+}
+
+/* Street View */
+
+      #street-view {
+        height: 100%;
+      }
+
   </style>
   
 <body>
 
-    <div class="container" id="main">
+<nav class="navbar navbar-masthead navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".bs-example-masthead-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+        <a class="navbar-brand"><img src="helsinkihelsingfors.png"></a>      
+    </div>
 
-      <div class="page-header" id="banner">
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse bs-example-masthead-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">#ihmisenmuotoinenkaupunki</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+
+    <div class="container-fluid" id="main">
+
         <div class="row">
+        
           <div class="col-lg-3">
-				<img src="logo.png" width="100%">
-				<div class="laatikko">
-					<p>Helsingissä kerätään joka päivä valtavia määriä dataa, jota voidaan hyödyntää päätöksenteon tukena sekä erilaisten digitaalisten palveluiden tuottamisessa.</p>
-					<p>Oheisissa kuvaajissa havainnollistetaan Helsingin ilmanlaadusta erilaisilla sensoreilla kerättävää dataa.</p>
-					<p>Kokeile puhaltaa pölyä näytön oikealla puolella olevaan sensoriin. Mitä tapahtuu?</p>
-				</div>			
+          	<h3>Sensoridata Helsingissä</h3>
+			<p>Helsingissä kerätään joka päivä valtavia määriä dataa, jota voidaan hyödyntää päätöksenteon tukena sekä erilaisten digitaalisten palveluiden tuottamisessa.</p>
+			<p>Oheisissa kuvaajissa havainnollistetaan Helsingin ilmanlaadusta erilaisilla sensoreilla kerättävää dataa.</p>
+			<p>Kokeile puhaltaa pölyä näytön oikealla puolella olevaan sensoriin. Mitä tapahtuu?</p>
           </div>
           <div class="col-lg-9">
-          
-			<div class="laatikko">
-                <h2>Ilmanlaatu Helsingissä</h2>
-                <p>TODO: Biomi data</p>                
-			</div>
+			<h3>Ilmanlaatu Helsingissä<br><small>(www.ilmanlaatu.fi)</small></h3>
+			
+    <div id="myCarousel" class="carousel slide" data-ride="carousel">
+        <!-- Carousel indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+            <li data-target="#myCarousel" data-slide-to="1"></li>
+            <li data-target="#myCarousel" data-slide-to="2"></li>
+            <li data-target="#myCarousel" data-slide-to="3"></li>
+            <li data-target="#myCarousel" data-slide-to="4"></li>
+        </ol>   
+        <!-- Wrapper for carousel items -->
+        <div class="carousel-inner">
+            <div class="item active">
+                <img src="mannerheimintie.png" alt="By Otso Kivekäs; retouched & uploaded (with permission) to Wikimedia Commons by Jonik. [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
+            	<div class="carousel-caption">
+                	<h3>Mannerheimintie</h3>
+                	<h5>3.9.2016 klo 13:00</h5>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Haisevat rikkiyhdisteet<br>(TRS)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><br>Hengitettävät hiukkaset<br>(PM10)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Hiilimonoksidi<br>(CO)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Otsoni<br>(O3)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Pienhiukkaset<br>(PM2.5)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Rikkidioksidi<br>(SO2)</div>
+            	</div>
+            </div>
+            <div class="item">
+                <img src="vartiokyla.png" alt="jampe [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
+            	<div class="carousel-caption">
+                	<h3>Vartiokylä</h3>
+                	<h5>3.9.2016 klo 13:00</h5>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Haisevat rikkiyhdisteet<br>(TRS)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><br>Hengitettävät hiukkaset<br>(PM10)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Hiilimonoksidi<br>(CO)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Otsoni<br>(O3)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Pienhiukkaset<br>(PM2.5)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Rikkidioksidi<br>(SO2)</div>
+            	</div>
+            </div>
+            <div class="item">
+                <img src="mechelininkatu.png" alt="wanghongliu [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
+                <div class="carousel-caption">
+                	<h3>Mechelininkatu</h3>
+                	<h5>3.9.2016 klo 13:00</h5>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Haisevat rikkiyhdisteet<br>(TRS)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><br>Hengitettävät hiukkaset<br>(PM10)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Hiilimonoksidi<br>(CO)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Otsoni<br>(O3)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Pienhiukkaset<br>(PM2.5)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Rikkidioksidi<br>(SO2)</div>
+            	</div>
+            </div>
+            <div class="item">
+                <img src="kallio.png" alt="By DreferComm (Own work) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
+                <div class="carousel-caption">
+                	<h3>Kallio</h3>
+                	<h5>3.9.2016 klo 13:00</h5>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Haisevat rikkiyhdisteet<br>(TRS)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><br>Hengitettävät hiukkaset<br>(PM10)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Hiilimonoksidi<br>(CO)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Otsoni<br>(O3)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Pienhiukkaset<br>(PM2.5)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Rikkidioksidi<br>(SO2)</div>
+            	</div>
+            </div>
+            <div class="item">
+                <img src="makelankatu.png" alt="By MKFI (Own work) [Public domain], via Wikimedia Commons">
+            	<div class="carousel-caption">
+                	<h3>Mäkelänkatu</h3>
+                	<h5>3.9.2016 klo 13:00</h5>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Haisevat rikkiyhdisteet<br>(TRS)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><br>Hengitettävät hiukkaset<br>(PM10)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Hiilimonoksidi<br>(CO)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Otsoni<br>(O3)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><br>Pienhiukkaset<br>(PM2.5)</div>
+                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><br>Rikkidioksidi<br>(SO2)</div>
+            	</div>
+            </div>
+        </div>
+	</div> 
 
-			<div class="laatikko">
-                <h2>Ilmanlaatu näyttelytilassa</h2>                
+            <h3>Pienhiukkaset näyttelytilassa</h3>    
+            <div class="col-md-6">            
  				<div id="viewDiv"></div>
-				<div id="messages" style="height:70px;overflow-y: scroll;">
-			</div>
+ 				<div id="messages" style="height:70px;overflow-y: scroll;">
+ 			</div>
+ 			<div class="col-md-6">
+ 				<div id="viewDiv2"></div>
+ 			</div>
+		  </div>
 				
             </div>
           </div>
-        </div>
       </div>
 
 
     </div>
-
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="../assets/js/custom.js"></script>
-
 
 <script>
 'use strict';
@@ -214,8 +373,8 @@ var chart = realTimeChart()
     .yTitle("Pienhiukkaset (PM2.5)")
     .xTitle("Aika")
     .border(false)
-    .width(800)
-    .height(400)
+    .width(600)
+    .height(300)
     .barWidth(2)
     .initialData(data);
 
