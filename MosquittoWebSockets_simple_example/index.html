@@ -1,11 +1,9 @@
 <!doctype html>
-<html lang="en" data-ng-app="hdwApp" data-ng-controller="hdwController">
+<html lang="en">
 <head>
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-route.min.js"></script>
   <title>Mosquitto test client</title>
   <script type="text/javascript" src="mqttws31.js"></script>
   <script type="text/javascript" src="config.js"></script>
@@ -256,9 +254,15 @@ font-weight:bold;
           </div>
           <div class="col-lg-9">
 			<h3>Ilmanlaatu Helsingissä<br><small>(www.ilmanlaatu.fi)</small></h3>
-<script>
+
+
+
+<div data-ng-app="hdwApp" data-ng-controller="hdwController">
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-route.min.js"></script>
+  <script>
   var hdwApp = angular.module('hdwApp', ['ngRoute']);
-  hdwApp.controller('hdwController', function($scope,$http)
+  hdwApp.controller('hdwController', function($scope,$http,$interval)
   {
       let baseuri = "http://helsinkidesignweek.rapida.fi/ilmanlaatu.php";//?p="+"nitrogendioxide"+"&ss="+"425";
       $scope.measurements = [
@@ -283,34 +287,41 @@ font-weight:bold;
       ];
 
       $scope.datas = [];
-      angular.forEach($scope.stations, function(station,si){
-        //console.debug("station",station)
-        let obj = {};
-        obj.station = station;
-        obj.time = null;
-        obj.measurements = {};
-        angular.forEach($scope.measurements, function(measurement,mi){
-          let uri = baseuri+"?p="+measurement.key+"&ss="+station.num;
-          $http.get(uri).then(function (response){
-            // drop errors (not found or such)
-            if (response.data.error != true) {
-              obj.measurements[measurement.key] = response.data;
-              if (obj.time==null && response.data.latest.time!=null) {
-                obj.time = response.data.latest.time;
-              } else if (response.data.latest.time!=null && obj.time<response.data.latest.time) {
-                obj.time = response.data.latest.time;
+      let fetchData = function() {
+        console.log("Fetching data");
+        let newDatas = [];
+        angular.forEach($scope.stations, function(station,si){
+          //console.debug("station",station);
+          let obj = {};
+          obj.station = station;
+          obj.time = null;
+          obj.measurements = {};
+          angular.forEach($scope.measurements, function(measurement,mi){
+            let uri = baseuri+"?p="+measurement.key+"&ss="+station.num;
+            $http.get(uri).then(function (response){
+              // drop errors (not found or such)
+              if (response.data.error != true) {
+                obj.measurements[measurement.key] = response.data;
+                if (obj.time==null && response.data.latest.time!=null) {
+                  obj.time = response.data.latest.time;
+                } else if (response.data.latest.time!=null && obj.time<response.data.latest.time) {
+                  obj.time = response.data.latest.time;
+                }
+              //} else {
+              //  console.debug("no dice",station.num,measurement.key,response.data);
               }
-            } else {
-              console.debug("no dice",station.num,measurement.key,response.data)
-            }
+            });
           });
+          //console.debug("station",obj)
+          newDatas.push(obj);
         });
-        console.debug("station",obj)
-        $scope.datas.push(obj);
-      });
+        $scope.datas = newDatas;
+      }
+      fetchData(); //initial
+      $interval(fetchData, 5*60*1000); //every 5 min
   });//-hdwController
 
-</script>			
+  </script>
     <div id="myCarousel" class="carousel slide" data-ride="carousel">
         <!-- Carousel indicators -->
         <ol class="carousel-indicators">
@@ -334,7 +345,7 @@ font-weight:bold;
           </div>
         </div>
 	  </div> 
-
+</div><!-- angular -->
 
 
             <h3>Pienhiukkaset näyttelytilassa</h3>    
