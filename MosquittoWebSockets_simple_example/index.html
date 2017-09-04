@@ -261,50 +261,52 @@ font-weight:bold;
   hdwApp.controller('hdwController', function($scope,$http)
   {
       let baseuri = "http://helsinkidesignweek.rapida.fi/ilmanlaatu.php";//?p="+"nitrogendioxide"+"&ss="+"425";
-      let measurements = [
-        /*
-        "nitrogendioxide", //typpioksidi
-        "particulateslt10um", // hengitettävät hiukkaset
-        "particulateslt2_5um", // pienhiukkaset
-        "carbonmonoxide", // hiilimonoksidi
-        "ozone", //otsoni
-        "sulphurdioxide", //rikkidioksidi
-        "odorsulphurcompounds", // haisevat rikkiyhdisteet (TRS)
-        */
-        "qualityIndex" // ilmanlaatuindeksi
+      $scope.measurements = [
+        //*
+        {"key":"odorsulphurcompounds","name":"Haisevat rikkiyhdisteet","short":"TRS"},
+        {"key":"particulateslt10um","name":"Hengitettävät hiukkaset","short":"PM10"},
+        {"key":"carbonmonoxide","name":"Hiilimonoksidi","short":"CO"},
+        {"key":"ozone","name":"Otsoni","short":"O3"},
+        {"key":"particulateslt2.5um","name":"Pienhiukkaset","short":"PM2.5"},
+        {"key":"sulphurdioxide","name":"Rikkidioksidi","short":"SO2"}
+
+        //{"key":"nitrogendioxide","name":"Typpioksidi","short":null},
+        //*/
+        //"qualityIndex" // ilmanlaatuindeksi
       ];
-      let stations = [
-        {"num":"564","name":"Mannerheimintie","img":{"src":"mannerheimintie.png", "alt":"By Otso Kivekäs; retouched & uploaded (with permission) to Wikimedia Commons by Jonik. [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},// Helsinki: Mannerheimintie 60.169643 24.939261
-        {"num":"781","name":"Vartiokylä","img":{"src":"vartiokyla.png", "alt":"jampe [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}}, // Helsinki: Vartiokylä Huivipolku 60.223886 25.102528
-        {"num":"425","name":"Kallio","img":{"src":"kallio.png", "alt":"By DreferComm (Own work) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},// Helsinki: Kallio 2 60.1874667 24.9505167
+      $scope.stations = [
+        {"num":"564","name":"Mannerheimintie","img":{"src":"mannerheimintie.png", "alt":"By Otso Kivekäs; retouched & uploaded (with permission) to Wikimedia Commons by Jonik. [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},
+        {"num":"781","name":"Vartiokylä","img":{"src":"vartiokyla.png", "alt":"jampe [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},
+        {"num":"425","name":"Kallio","img":{"src":"kallio.png", "alt":"By DreferComm (Own work) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},
         {"num":"930","name":"Mechelininkatu","img":{"src":"mechelininkatu.png", "alt":"wanghongliu [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},
-        //?? Helsinki: Vallila 1 60.193665 24.963942
         {"num":"902","name":"Mäkelänkatu","img":{"src":"makelankatu.png", "alt":"By MKFI (Own work) [Public domain], via Wikimedia Commons"}}
-        //?? Helsinki: Smear III, Kumpula
       ];
-      console.debug(stations);
 
       $scope.datas = [];
-      angular.forEach(measurements, function(measurement,mi){
-        angular.forEach(stations, function(station,si){
-          console.debug("station",station)
-          let uri = baseuri+"?p="+measurement+"&ss="+station.num;
+      angular.forEach($scope.stations, function(station,si){
+        //console.debug("station",station)
+        let obj = {};
+        obj.station = station;
+        obj.time = null;
+        obj.measurements = {};
+        angular.forEach($scope.measurements, function(measurement,mi){
+          let uri = baseuri+"?p="+measurement.key+"&ss="+station.num;
           $http.get(uri).then(function (response){
             // drop errors (not found or such)
-            if (!response.data.error) {
-              let obj = {};
-              obj.measurement = measurement;
-              obj.station = station;
-              obj.data = response.data;
-              $scope.datas.push(obj);
-              /*
-              angular.forEach(response.data, function(robj,rkey){
-                $scope.datas.push(robj); // viedään löytynyt arvo näytille
-              });
-              //*/
+            if (response.data.error != true) {
+              obj.measurements[measurement.key] = response.data;
+              if (obj.time==null && response.data.latest.time!=null) {
+                obj.time = response.data.latest.time;
+              } else if (response.data.latest.time!=null && obj.time<response.data.latest.time) {
+                obj.time = response.data.latest.time;
+              }
+            } else {
+              console.debug("no dice",station.num,measurement.key,response.data)
             }
           });
         });
+        console.debug("station",obj)
+        $scope.datas.push(obj);
       });
   });//-hdwController
 
@@ -324,84 +326,16 @@ font-weight:bold;
               <img data-ng-src="{{d.station.img.src}}" alt="{{d.station.img.alt}}">
             <div class="carousel-caption">
                 <h3>{{d.station.name}}</h3>
-                <h5>{{d.data.latest.time}}:00</h5>
-                <div class="col-md-2"><button type="button" class="btn btn-warning">{{d.data.latest.parts.odorsulphurcompounds}}</button><h6>Haisevat rikkiyhdisteet <br><small>(TRS)</small></h6></div>
-                <div class="col-md-2"><button type="button" class="btn btn-danger">{{d.data.latest.parts.particulateslt10um}}</button><h6>Hengitettävät hiukkaset<br><small>(PM10)</small></h6></div>
-                <div class="col-md-2"><button type="button" class="btn btn-info">{{d.data.latest.parts.carbonmonoxide}}</button><h6>Hiilimonoksidi<br><small>(CO)</small></h6></div>
-                <div class="col-md-2"><button type="button" class="btn btn-info">{{d.data.latest.parts.ozone}}</button><h6>Otsoni<br><small>(O3)</small></h6></div>
-                <div class="col-md-2"><button type="button" class="btn btn-info">{{d.data.latest.parts["particulateslt2.5um"]}}</button><h6>Pienhiukkaset<br><small>(PM2.5)</small></h6></div>
-                <div class="col-md-2"><button type="button" class="btn btn-warning">{{d.data.latest.parts.sulphurdioxide}}</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
+                <h5>{{d.time}}:00</h5>
+                <div data-ng-repeat="m in measurements" class="col-md-2">
+                  <button type="button" class="btn" data-ng-class="{'btn-success':d.measurements[m.key].latest.EN==='good', 'btn-info':d.measurements[m.key].latest.EN==='satisfactory', 'btn-primary':d.measurements[m.key].latest.EN==='fair', 'btn-warning':d.measurements[m.key].latest.EN==='poor', 'btn-danger':d.measurements[m.key].latest.EN==='very poor'}">{{d.measurements[m.key].latest.data}}</button><h6>{{m.name}} <br><small>({{m.short}})</small></h6>
+                </div>
             </div>
           </div>
-          <!--
-            <div class="item active">
-                <img src="mannerheimintie.png" alt="By Otso Kivekäs; retouched & uploaded (with permission) to Wikimedia Commons by Jonik. [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
-            	<div class="carousel-caption">
-                	<h3>Mannerheimintie</h3>
-                	<h5>3.9.2016 klo 13:00</h5>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Haisevat rikkiyhdisteet <br><small>(TRS)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><h6>Hengitettävät hiukkaset<br><small>(PM10)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Hiilimonoksidi<br><small>(CO)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Otsoni<br><small>(O3)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Pienhiukkaset<br><small>(PM2.5)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
-            	</div>
-            </div>
-            <div class="item">
-                <img src="vartiokyla.png" alt="jampe [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
-            	<div class="carousel-caption">
-                	<h3>Vartiokylä</h3>
-                	<h5>3.9.2016 klo 13:00</h5>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Haisevat rikkiyhdisteet <br><small>(TRS)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><h6>Hengitettävät hiukkaset<br><small>(PM10)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Hiilimonoksidi<br><small>(CO)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Otsoni<br><small>(O3)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Pienhiukkaset<br><small>(PM2.5)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
-            	</div>
-            </div>
-            <div class="item">
-                <img src="mechelininkatu.png" alt="wanghongliu [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
-                <div class="carousel-caption">
-                	<h3>Mechelininkatu</h3>
-                	<h5>3.9.2016 klo 13:00</h5>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Haisevat rikkiyhdisteet <br><small>(TRS)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><h6>Hengitettävät hiukkaset<br><small>(PM10)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Hiilimonoksidi<br><small>(CO)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Otsoni<br><small>(O3)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Pienhiukkaset<br><small>(PM2.5)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
-            	</div>
-            </div>
-            <div class="item">
-                <img src="kallio.png" alt="By DreferComm (Own work) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
-                <div class="carousel-caption">
-                	<h3>Kallio</h3>
-                	<h5>3.9.2016 klo 13:00</h5>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Haisevat rikkiyhdisteet <br><small>(TRS)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><h6>Hengitettävät hiukkaset<br><small>(PM10)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Hiilimonoksidi<br><small>(CO)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Otsoni<br><small>(O3)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Pienhiukkaset<br><small>(PM2.5)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
-            	</div>
-            </div>
-            <div class="item">
-                <img src="makelankatu.png" alt="By MKFI (Own work) [Public domain], via Wikimedia Commons">
-            	<div class="carousel-caption">
-                	<h3>Mäkelänkatu</h3>
-                	<h5>3.9.2016 klo 13:00</h5>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Haisevat rikkiyhdisteet <br><small>(TRS)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-danger">80</button><h6>Hengitettävät hiukkaset<br><small>(PM10)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Hiilimonoksidi<br><small>(CO)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Otsoni<br><small>(O3)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-info">50</button><h6>Pienhiukkaset<br><small>(PM2.5)</small></h6></div>
-                	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
-            	</div>
-            </div>
-          -->
         </div>
-	</div> 
+	  </div> 
+
+
 
             <h3>Pienhiukkaset näyttelytilassa</h3>    
             <div class="col-md-6">            
