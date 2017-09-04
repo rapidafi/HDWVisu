@@ -1,16 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-ng-app="hdwApp" data-ng-controller="hdwController">
 <head>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Mosquitto test client</title>
-    <script type="text/javascript" src="mqttws31.js"></script>
-    <script type="text/javascript" src="config.js"></script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-route.min.js"></script>
+  <title>Mosquitto test client</title>
+  <script type="text/javascript" src="mqttws31.js"></script>
+  <script type="text/javascript" src="config.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
 	<script src="realTimeChart.js"></script>
 	<script src="carousel.js"></script>
-    <script type="text/javascript">
+  <script type="text/javascript">
         // Parameters
         var hostname = clientData.ws.hostname;
         var port = clientData.ws.port;
@@ -254,7 +256,57 @@ font-weight:bold;
           </div>
           <div class="col-lg-9">
 			<h3>Ilmanlaatu Helsingissä<br><small>(www.ilmanlaatu.fi)</small></h3>
-			
+<script>
+  var hdwApp = angular.module('hdwApp', ['ngRoute']);
+  hdwApp.controller('hdwController', function($scope,$http)
+  {
+      let baseuri = "http://helsinkidesignweek.rapida.fi/ilmanlaatu.php";//?p="+"nitrogendioxide"+"&ss="+"425";
+      let measurements = [
+        /*
+        "nitrogendioxide", //typpioksidi
+        "particulateslt10um", // hengitettävät hiukkaset
+        "particulateslt2_5um", // pienhiukkaset
+        "carbonmonoxide", // hiilimonoksidi
+        "ozone", //otsoni
+        "sulphurdioxide", //rikkidioksidi
+        "odorsulphurcompounds", // haisevat rikkiyhdisteet (TRS)
+        */
+        "qualityIndex" // ilmanlaatuindeksi
+      ];
+      let stations = [
+        {"num":"564","name":"Mannerheimintie","img":{"src":"mannerheimintie.png", "alt":"By Otso Kivekäs; retouched & uploaded (with permission) to Wikimedia Commons by Jonik. [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},// Helsinki: Mannerheimintie 60.169643 24.939261
+        {"num":"781","name":"Vartiokylä","img":{"src":"vartiokyla.png", "alt":"jampe [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}}, // Helsinki: Vartiokylä Huivipolku 60.223886 25.102528
+        {"num":"425","name":"Kallio","img":{"src":"kallio.png", "alt":"By DreferComm (Own work) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},// Helsinki: Kallio 2 60.1874667 24.9505167
+        {"num":"206","name":"Mechelininkatu","img":{"src":"mechelininkatu.png", "alt":"wanghongliu [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons"}},// Helsinki: Vallila 1 60.193665 24.963942
+        {"num":"580","name":"Mäkelänkatu","img":{"src":"makelankatu.png", "alt":"By MKFI (Own work) [Public domain], via Wikimedia Commons"}}// Helsinki: Smear III, Kumpula
+      ];
+      console.debug(stations);
+
+      $scope.datas = [];
+      angular.forEach(measurements, function(measurement,mi){
+        angular.forEach(stations, function(station,si){
+          console.debug("station",station)
+          let uri = baseuri+"?p="+measurement+"&ss="+station.num;
+          $http.get(uri).then(function (response){
+            // drop errors (not found or such)
+            if (!response.data.error) {
+              let obj = {};
+              obj.measurement = measurement;
+              obj.station = station;
+              obj.data = response.data;
+              $scope.datas.push(obj);
+              /*
+              angular.forEach(response.data, function(robj,rkey){
+                $scope.datas.push(robj); // viedään löytynyt arvo näytille
+              });
+              //*/
+            }
+          });
+        });
+      });
+  });//-hdwController
+
+</script>			
     <div id="myCarousel" class="carousel slide" data-ride="carousel">
         <!-- Carousel indicators -->
         <ol class="carousel-indicators">
@@ -266,6 +318,20 @@ font-weight:bold;
         </ol>   
         <!-- Wrapper for carousel items -->
         <div class="carousel-inner">
+          <div data-ng-repeat="d in datas" class="item" data-ng-class="{active: $index==0}">
+              <img data-ng-src="{{d.station.img.src}}" alt="{{d.station.img.alt}}">
+            <div class="carousel-caption">
+                <h3>{{d.station.name}}</h3>
+                <h5>{{d.data.latest.time}}:00</h5>
+                <div class="col-md-2"><button type="button" class="btn btn-warning">{{d.data.latest.parts.odorsulphurcompounds}}</button><h6>Haisevat rikkiyhdisteet <br><small>(TRS)</small></h6></div>
+                <div class="col-md-2"><button type="button" class="btn btn-danger">{{d.data.latest.parts.particulateslt10um}}</button><h6>Hengitettävät hiukkaset<br><small>(PM10)</small></h6></div>
+                <div class="col-md-2"><button type="button" class="btn btn-info">{{d.data.latest.parts.carbonmonoxide}}</button><h6>Hiilimonoksidi<br><small>(CO)</small></h6></div>
+                <div class="col-md-2"><button type="button" class="btn btn-info">{{d.data.latest.parts.ozone}}</button><h6>Otsoni<br><small>(O3)</small></h6></div>
+                <div class="col-md-2"><button type="button" class="btn btn-info">{{d.data.latest.parts["particulateslt2.5um"]}}</button><h6>Pienhiukkaset<br><small>(PM2.5)</small></h6></div>
+                <div class="col-md-2"><button type="button" class="btn btn-warning">{{d.data.latest.parts.sulphurdioxide}}</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
+            </div>
+          </div>
+          <!--
             <div class="item active">
                 <img src="mannerheimintie.png" alt="By Otso Kivekäs; retouched & uploaded (with permission) to Wikimedia Commons by Jonik. [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons">
             	<div class="carousel-caption">
@@ -331,6 +397,7 @@ font-weight:bold;
                 	<div class="col-md-2"><button type="button" class="btn btn-warning">50</button><h6>Rikkidioksidi<br><small>(SO2)</small></h6></div>
             	</div>
             </div>
+          -->
         </div>
 	</div> 
 
