@@ -4,7 +4,6 @@
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Mosquitto test client</title>
   <script type="text/javascript" src="mqttws31.js"></script>
   <script type="text/javascript" src="config.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
@@ -49,7 +48,7 @@
             console.log("Message arrived: topic=" + message.destinationName + ", message=" + message.payloadString);
             var d1 = document.getElementById('messages');
             var objson = JSON.parse(message.payloadString);    
-            d1.insertAdjacentHTML('beforeend', '<div>'+message.payloadString+'</div>');
+            //d1.insertAdjacentHTML('beforeend', '<div>'+message.payloadString+'</div>');
 
 			var timeout = Math.round(timeScale(normal()));
 
@@ -59,16 +58,20 @@
 			var now = new Date();
     
    			var obj = {
-      			value: objson["pm2.5"],
+      			value: objson.pm10,
       			time: now,
       			color: "#f5a3c7",
       			ts: now.getTime(),
       			interval: timeout
-    		};
+    		};    		
 
     		// send the datum to the chart
-    		chart.datum(obj);
-
+    		if (objson.id=="hdw001") {
+    		leftchart.datum(obj);
+    		} else if (objson.id == "hdw002") {
+    		rightchart.datum(obj);
+			}
+			
     		// do forever
 			}, timeout);
 
@@ -86,7 +89,7 @@
 
   <meta charset="utf-8">
 
-  <title>Ilmanlaatuvisualisointi</title>
+  <title>Sensoridatavisualisointi</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -324,6 +327,8 @@ font-weight: bold;
   });//-hdwController
 
   </script>
+    
+  
     <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="10000">
         <!-- Carousel indicators -->
         <ol class="carousel-indicators">
@@ -382,14 +387,14 @@ var timeScale = d3.scale.linear()
 
 // define value scale
 var valueScale = d3.scale.linear()
-    .domain([0, 20])
-    .range([30, 95]);
+    .domain([0,40])
+    .range([0,40]);
 
 // generate initial data
 var normal = d3.random.normal(1000, 150);
 var currMs = new Date().getTime() - 300000 - 4000;
 var data = d3.range(300).map(function(d, i, arr) {
-  var value = valueScale(Math.random()); // random data
+  var value = valueScale(20*Math.random()); // random data
   //var value = Math.round((d % 60) / 60 * 95); // ramp data
   var interval = Math.round(timeScale(normal()));
   currMs += interval;
@@ -400,13 +405,13 @@ var data = d3.range(300).map(function(d, i, arr) {
 
 // create the real time chart
 var leftchart = realTimeChart()
-    .title("Ilmanlaatu näyttelytilassa")
+    .title("Ilmanlaatu HelsinkiLabissa")
     .yTitle("Hiukkasten määrä")
     .xTitle("Aika")
     .border(false)
     .width(600)
     .height(300)
-    .barWidth(2)
+    .barWidth(3)
     .initialData(data);
 
 var rightchart = realTimeChart()
@@ -416,7 +421,7 @@ var rightchart = realTimeChart()
     .border(false)
     .width(600)
     .height(300)
-    .barWidth(2)
+    .barWidth(3)
     .initialData(data);
 
 console.log("Version: ", leftchart.version);

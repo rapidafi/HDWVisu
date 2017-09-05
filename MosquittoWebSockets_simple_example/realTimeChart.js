@@ -7,12 +7,12 @@ function realTimeChart() {
 
   var version = "0.1.0",
       datum, initialData, data,
-      maxSeconds = 300, pixelsPerSecond = 10,
+      maxSeconds = 300, pixelsPerSecond = 30,
       svgWidth = 700, svgHeight = 300,
       margin = { top: 20, bottom: 20, left: 50, right: 30, topNav: 10, bottomNav: 20 },
       dimension = { chartTitle: 20, xAxis: 20, yAxis: 20, xTitle: 20, yTitle: 20, navChart: 70 },
-      barWidth = 3,
-      maxY = 100, minY = 0,
+      barWidth = 5,
+      maxY = 40, minY = 0,
       chartTitle, yTitle, xTitle,
       drawXAxis = true, drawYAxis = true, drawNavChart = true,
       border,
@@ -301,7 +301,7 @@ function realTimeChart() {
           .attr("x", function(d) { return Math.round(x(d.time) - barWidth); })
           .attr("y", function(d) { return y(d.value); })
           .attr("width", barWidth)
-          .attr("height", function(d) { return height - y(d.value); })
+          .attr("height", function(d) { return /*height - */y(d.value); })
           .style("fill", function(d) { return d.color == undefined ? "white" : d.color; })
           //.style("stroke", "none")
           //.style("stroke-width", "1px")
