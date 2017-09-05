@@ -1,5 +1,5 @@
-import $ from 'jquery'
-import Util from './util'
+//import $ from 'jquery'
+//import Util from './util'
 
 
 /**
@@ -521,4 +521,4 @@ const Carousel = (() => {
 
 })(jQuery)
 
-export default Carousel
+//export default Carousel
