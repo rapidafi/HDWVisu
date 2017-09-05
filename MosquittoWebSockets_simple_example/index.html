@@ -59,7 +59,7 @@
 			var now = new Date();
     
    			var obj = {
-      			value: valueScale(objson.data),
+      			value: objson["pm2.5"],
       			time: now,
       			color: "#f5a3c7",
       			ts: now.getTime(),
@@ -180,7 +180,8 @@ font-family: "Source Sans Pro", sans-serif;
 h5 {
 color:#00d7a7;
 font-family: "Source Sans Pro", sans-serif;
-margin-bottom:24px;
+font-size: 18px;
+margin-bottom: -6px;
 }
 
 h6 {
@@ -191,6 +192,11 @@ font-size: 14px;
 font-weight:bold;
 }
 
+.btn {
+font-family: "Source Sans Pro", sans-serif;
+font-weight: bold;
+}
+
 /* Carousel CSS */
 
 .carousel{
@@ -199,21 +205,17 @@ font-weight:bold;
 }
 .carousel .item{
     min-height: 280px; /* Prevent carousel from being distorted if for some reason image doesn't load */
+    max-height: 280px;
 }
 .carousel .item img{
     margin: 0 auto; /* Align slide image horizontally center */
 }
 
 .carousel-caption {
-	background: rgba(0,0,0,0.7);
+	background: rgba(0,0,0,0.8);
 	margin-bottom: 50px;
 }
 
-/* Street View */
-
-      #street-view {
-        height: 100%;
-      }
 
   </style>
   
@@ -322,7 +324,7 @@ font-weight:bold;
   });//-hdwController
 
   </script>
-    <div id="myCarousel" class="carousel slide" data-ride="carousel">
+    <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="10000">
         <!-- Carousel indicators -->
         <ol class="carousel-indicators">
             <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
@@ -336,10 +338,10 @@ font-weight:bold;
           <div data-ng-repeat="d in datas" class="item" data-ng-class="{active: $index==0}">
               <img data-ng-src="{{d.station.img.src}}" alt="{{d.station.img.alt}}">
             <div class="carousel-caption">
-                <h3>{{d.station.name}}</h3>
                 <h5>{{d.time}}:00</h5>
-                <div data-ng-repeat="m in measurements" class="col-md-2">
-                  <button type="button" class="btn" data-ng-class="{'btn-success':d.measurements[m.key].latest.EN==='good', 'btn-info':d.measurements[m.key].latest.EN==='satisfactory', 'btn-primary':d.measurements[m.key].latest.EN==='fair', 'btn-warning':d.measurements[m.key].latest.EN==='poor', 'btn-danger':d.measurements[m.key].latest.EN==='very poor'}">{{d.measurements[m.key].latest.data}}</button><h6>{{m.name}} <br><small>({{m.short}})</small></h6>
+                <h3>{{d.station.name}}</h3>
+                <div data-ng-repeat="m in measurements" class="col-md-6">
+                  <button type="button" class="btn" data-ng-class="{'btn-success':d.measurements[m.key].latest.EN==='good', 'btn-info':d.measurements[m.key].latest.EN==='satisfactory', 'btn-primary':d.measurements[m.key].latest.EN==='fair', 'btn-warning':d.measurements[m.key].latest.EN==='poor', 'btn-danger':d.measurements[m.key].latest.EN==='very poor'}">{{d.measurements[m.key].latest.data}} ({{d.measurements[m.key].latest.FI}})</button><h6>{{m.name}} ({{m.short}})</h6>
                 </div>
             </div>
           </div>
@@ -350,11 +352,11 @@ font-weight:bold;
 
             <h3>Pienhiukkaset näyttelytilassa</h3>    
             <div class="col-md-6">            
- 				<div id="viewDiv"></div>
- 				<div id="messages" style="height:70px;overflow-y: scroll;">
+ 				<div id="leftviewDiv"></div>
+ 				<div id="messages" style="height:70px;overflow-y: scroll;"></div>
  			</div>
  			<div class="col-md-6">
- 				<div id="viewDiv2"></div>
+ 				<div id="rightviewDiv"></div>
  			</div>
 		  </div>
 				
@@ -397,9 +399,9 @@ var data = d3.range(300).map(function(d, i, arr) {
 })
 
 // create the real time chart
-var chart = realTimeChart()
+var leftchart = realTimeChart()
     .title("Ilmanlaatu näyttelytilassa")
-    .yTitle("Pienhiukkaset (PM2.5)")
+    .yTitle("Hiukkasten määrä")
     .xTitle("Aika")
     .border(false)
     .width(600)
@@ -407,15 +409,30 @@ var chart = realTimeChart()
     .barWidth(2)
     .initialData(data);
 
-console.log("Version: ", chart.version);
+var rightchart = realTimeChart()
+    .title("Ilmanlaatu Esplanadilla")
+    .yTitle("Hiukkasten määrä")
+    .xTitle("Aika")
+    .border(false)
+    .width(600)
+    .height(300)
+    .barWidth(2)
+    .initialData(data);
+
+console.log("Version: ", leftchart.version);
+console.log("Version: ", rightchart.version);
 console.dir("Dir++");
 console.trace();
 console.warn("warn")
 
 // invoke the chart
-var chartDiv = d3.select("#viewDiv").append("div")
-    .attr("id", "chartDiv")
-    .call(chart);
+var leftchartDiv = d3.select("#leftviewDiv").append("div")
+    .attr("id", "leftchartDiv")
+    .call(leftchart);
+    
+var rightchartDiv = d3.select("#rightviewDiv").append("div")
+    .attr("id", "rightchartDiv")
+    .call(rightchart);
 
 // alternative invocation
 //chart(chartDiv); 
