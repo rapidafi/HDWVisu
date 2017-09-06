@@ -321,7 +321,33 @@ h6 {
       });//-hdwController
 
       </script>
-  
+      <style>
+        .aircond-good {
+          color: #000;
+          background-color: #00ff00;
+          border-color: #11ff11;
+        }
+        .aircond-satisfactory {
+          color: #000;
+          background-color: #ffff00;
+          border-color: #ffff11;
+        }
+        .aircond-mediocre {
+          color: #000;
+          background-color: #ff9900;
+          border-color: #ffaa11;
+        }
+        .aircond-poor {
+          color: #fff;
+          background-color: #ff0000;
+          border-color: #ff1111;
+        }
+        .aircond-verypoor {
+          color: #fff;
+          background-color: #ff00ff;
+          border-color: #ff11ff;
+        }
+      </style>
 
       <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="10000">
         <!-- Carousel indicators -->
@@ -340,7 +366,13 @@ h6 {
               <h5>{{d.time}}:00</h5>
               <h3>{{d.station.name}}</h3>
               <div data-ng-repeat="m in measurements" class="col-md-6">
-                <button type="button" class="btn" data-ng-class="{'btn-success':d.measurements[m.key].latest.EN==='good', 'btn-info':d.measurements[m.key].latest.EN==='satisfactory', 'btn-primary':d.measurements[m.key].latest.EN==='fair', 'btn-warning':d.measurements[m.key].latest.EN==='poor', 'btn-danger':d.measurements[m.key].latest.EN==='very poor'}">
+                <button type="button" class="btn" data-ng-class="{
+                  'aircond-good':         d.measurements[m.key].latest.EN==='good',
+                  'aircond-satisfactory': d.measurements[m.key].latest.EN==='satisfactory',
+                  'aircond-mediocre':     d.measurements[m.key].latest.EN==='mediocre',
+                  'aircond-poor':         d.measurements[m.key].latest.EN==='poor',
+                  'aircond-verypoor':     d.measurements[m.key].latest.EN==='very poor'
+                }">
                   {{d.measurements[m.key].latest.data}}&nbsp;
                   <span data-ng-if="d.measurements[m.key]">({{d.measurements[m.key].latest.FI}})</span>
                 </button>
